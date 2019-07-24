@@ -21,19 +21,20 @@
 		
 		.cell {
 			position: relative;
-			width: 25px;
-			height: 25px;
+			width: 75px;
+			height: 75px;
 			border: 1px solid black;
 		}
 		
 		.highlight {
 			position: absolute;
-			width: 25px;
-			height: 25px;
+			width: 75px;
+			height: 75px;
 			background-color: #ff000000;
 			display: flex;
 			justify-content: center;
 			align-items: center;
+			font-size: 50px;
 		}
 		
 		.best-move {
@@ -192,7 +193,6 @@
 	
 	function legalMovesMessage(dataString) {
 		legalMoves = event.data.split('Legal uci moves: ')[1].split(' ').filter(x => x.length == 4)
-		console.log(legalMoves)
 	}
 	
 	function bestMoveMessage(dataString) {
@@ -228,7 +228,6 @@
 		Object.keys(virtualBoard).forEach(c => virtualBoard[c].forEach((p,r) => {
 			validAttacks = validAttacks.concat(calculateValidAttacks(p, `${c}${r}`) || [])
 		}))
-		console.log(validAttacks)
 		colorHeatMap()
 	}
 	
@@ -333,7 +332,6 @@
 			if (c[0] < -1) {
 				if (c[1] > 1) {
 					for (let i = 1; i < Math.abs(c[1]); i++) {
-						console.log(virtualBoard, virtualBoard[columns[pieceCol - i]][pieceRow + i])
 						if (typeof virtualBoard[columns[pieceCol - i]][pieceRow + i] === 'string') return a
 					}
 				}
@@ -350,7 +348,6 @@
 	
 	function clickBestMove(move) {
 		makeMove(move)
-		console.log('clicked move', move)
 	}
 	
 	function colorHeatMap() {
@@ -363,19 +360,17 @@
 	}
 	
 	function draw() {
-		console.log('drawing')
 		stockfish.postMessage(`d`)
 	}
 	
 	function makeMove(move) {
-		console.log('making move', move)
 		stockfish.postMessage(`position fen ${currentFen} moves ${move}`)
 		draw()
 		evaluateBestMove()
 	}
 	
 	function evaluateBestMove() {
-		stockfish.postMessage(`go depth 10`)
+		stockfish.postMessage(`go movetime 1000`)
 	}
 	
 </script>
