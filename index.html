@@ -150,7 +150,7 @@
 	initBoard()
 	
 	
-	const stockfish = new Worker("./stockfish.js")
+	const stockfish = new Worker("./node_modules/stockfish/src/stockfish.js")
 	stockfish.postMessage('setoption name MultiPV value 3')
 	draw()
 	evaluateBestMove()
