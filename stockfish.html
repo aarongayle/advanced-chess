@@ -1,0 +1,224 @@
+<html>
+<head>
+	<script src="https://cdn.jsdelivr.net/npm/stockfish@10.0.0/src/stockfish.min.js"></script>
+	<script
+  src="https://code.jquery.com/jquery-3.4.1.min.js"
+  integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+  crossorigin="anonymous"></script>
+	<style>
+		#board {
+			display: flex;
+		}
+		
+		#board-and-table {
+			display: flex;
+		}
+		
+		.column {
+			display: flex;
+			flex-direction: column-reverse;
+		}
+		
+		.cell {
+			width: 25px;
+			height: 25px;
+			border: 1px solid black;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+		
+		.best-move {
+			margin: 2px;
+			background-color: lightgreen;
+			cursor: pointer;
+		}	
+	</style>
+</head>
+<body>
+<div id="board-and-table">
+	<div id="board">
+		<div id="a" class="column">
+			<div class="cell a1"></div>
+			<div class="cell a2"></div>
+			<div class="cell a3"></div>
+			<div class="cell a4"></div>
+			<div class="cell a5"></div>
+			<div class="cell a6"></div>
+			<div class="cell a7"></div>
+			<div class="cell a8"></div>
+		</div>
+		<div id="b" class="column">		
+			<div class="cell b1"></div>
+			<div class="cell b2"></div>
+			<div class="cell b3"></div>
+			<div class="cell b4"></div>
+			<div class="cell b5"></div>
+			<div class="cell b6"></div>
+			<div class="cell b7"></div>
+			<div class="cell b8"></div></div>
+		<div id="c" class="column">		
+			<div class="cell c1"></div>
+			<div class="cell c2"></div>
+			<div class="cell c3"></div>
+			<div class="cell c4"></div>
+			<div class="cell c5"></div>
+			<div class="cell c6"></div>
+			<div class="cell c7"></div>
+			<div class="cell c8"></div></div>
+		<div id="d" class="column">		
+			<div class="cell d1"></div>
+			<div class="cell d2"></div>
+			<div class="cell d3"></div>
+			<div class="cell d4"></div>
+			<div class="cell d5"></div>
+			<div class="cell d6"></div>
+			<div class="cell d7"></div>
+			<div class="cell d8"></div></div>
+		<div id="e" class="column">		
+			<div class="cell e1"></div>
+			<div class="cell e2"></div>
+			<div class="cell e3"></div>
+			<div class="cell e4"></div>
+			<div class="cell e5"></div>
+			<div class="cell e6"></div>
+			<div class="cell e7"></div>
+			<div class="cell e8"></div></div>
+		<div id="f" class="column">		
+			<div class="cell f1"></div>
+			<div class="cell f2"></div>
+			<div class="cell f3"></div>
+			<div class="cell f4"></div>
+			<div class="cell f5"></div>
+			<div class="cell f6"></div>
+			<div class="cell f7"></div>
+			<div class="cell f8"></div></div>
+		<div id="g" class="column">		
+			<div class="cell g1"></div>
+			<div class="cell g2"></div>
+			<div class="cell g3"></div>
+			<div class="cell g4"></div>
+			<div class="cell g5"></div>
+			<div class="cell g6"></div>
+			<div class="cell g7"></div>
+			<div class="cell g8"></div></div>
+		<div id="h" class="column">		
+			<div class="cell h1"></div>
+			<div class="cell h2"></div>
+			<div class="cell h3"></div>
+			<div class="cell h4"></div>
+			<div class="cell h5"></div>
+			<div class="cell h6"></div>
+			<div class="cell h7"></div>
+			<div class="cell h8"></div></div>
+	</div>
+	<div id="table">
+		<div class="best-move move1"></div>
+		<div class="best-move move2"></div>
+		<div class="best-move move3"></div>
+	</div>
+</div>
+
+
+<script>
+	const columns = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+	const pieces = {
+		k: '♚',
+		q: '♛',
+		r: '♜',
+		b: '♝',
+		n: '♞',
+		p: '♟',
+		K: '♔',
+		Q: '♕',
+		R: '♖',
+		B: '♗',
+		N: '♘',
+		P: '♙',
+	}
+	let currentFen = ''
+	let legalMoves = []
+	
+	function initBoard() {
+		for (let c = 0; c < 8; c++) {
+			for (let r = 0; r < 8; r++) {
+				if (c%2 == r%2) $(`.${columns[c]}${r + 1}`).css('background-color', '#ddd')
+				else $(`.${columns[c]}${r + 1}`).css('background-color', '#fff')
+			}
+		}
+	}
+	initBoard()
+	
+	
+	const stockfish = new Worker("./node_modules/stockfish/src/stockfish.js")
+	stockfish.postMessage('setoption name MultiPV value 3')
+	draw()
+	evaluateBestMove()
+	
+	stockfish.onmessage = function onmessage(event) {
+		if (event.data.startsWith('info depth 5')) return bestMoveMessage(event.data)
+		if (event.data.startsWith('Legal uci moves: ')) return legalMovesMessage(event.data)
+		if (event.data.startsWith('Fen:')) {
+			currentFen = event.data.split('Fen: ')[1]
+			$('.cell').text('')
+			const fen = event.data.split(' ')[1]
+			const rows = fen.split('/').reverse()
+			rows.forEach((row, rowNumber) => {
+				cells = row.split('')
+				let col = -1
+				cells.forEach((cell, cellNumber) => {
+					col++
+					if (parseInt(cell)) return col += parseInt(cell) - 1
+					$(`.${columns[col]}${rowNumber+1}`)
+						.text(pieces[cell])
+						.css('color', () => cell == cell.toUpperCase() ? 'darkred' : 'darkblue')
+				})
+			})
+		}
+	}
+	
+	function legalMovesMessage(dataString) {
+		legalMoves = event.data.split('Legal uci moves: ')[1].split(' ').filter(x => x.length == 4)
+		console.log(legalMoves)
+	}
+	
+	function bestMoveMessage(dataString) {
+		const bestMove = dataString
+			.split(' pv ')[1]
+			.split(' ')[0]
+		const score = dataString
+			.split('multipv ')[1]
+			.split(' ')[0]
+		
+		$(`.move${score}`)
+			.text(bestMove)
+			.unbind()
+			.click('click', () => clickBestMove(bestMove))
+			.hover(() => $(`.${bestMove.substring(0,2)}, .${bestMove.substring(2,4)}`).css('background-color', 'gold'),
+				initBoard)
+	}
+	
+	function clickBestMove(move) {
+		makeMove(move)
+		console.log('clicked move', move)
+	}
+	
+	function draw() {
+		console.log('drawing')
+		stockfish.postMessage(`d`)
+	}
+	
+	function makeMove(move) {
+		console.log('making move', move)
+		stockfish.postMessage(`position fen ${currentFen} moves ${move}`)
+		draw()
+		evaluateBestMove()
+	}
+	
+	function evaluateBestMove() {
+		stockfish.postMessage(`go depth 5`)
+	}
+	
+</script>
+</body>
+</html>
