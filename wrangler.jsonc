@@ -1,0 +1,11 @@
+// Advanced Chess on Cloudflare Workers: the static Vite build in dist/, served as assets at chess.gayle.dev.
+// No server code; online games are peer-to-peer. Deploy with `npm run deploy`.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "advanced-chess",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "dist"
+  },
+  "routes": [{ "pattern": "chess.gayle.dev", "custom_domain": true }]
+}

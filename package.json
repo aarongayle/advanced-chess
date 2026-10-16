@@ -1,5 +1,27 @@
 {
+  "name": "advanced-chess",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "predev": "node scripts/copy-engine.mjs",
+    "dev": "vite",
+    "prebuild": "node scripts/copy-engine.mjs",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "deploy": "npm run build && wrangler deploy"
+  },
   "dependencies": {
-    "stockfish": "^10.0.0"
+    "chess.js": "^1.4.0",
+    "chessground": "^9.2.1",
+    "trystero": "^0.26.0"
+  },
+  "devDependencies": {
+    "stockfish": "^19.0.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.5",
+    "wrangler": "^4.151.1"
   }
 }
